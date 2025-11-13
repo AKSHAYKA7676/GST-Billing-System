@@ -1,53 +1,44 @@
+{# gstbillingapp/templates/gstbillingapp/books.html #}
 {% extends "gstbillingapp/base.html" %}
-
-{% load static %}
-
-
+{% block title %}Ledger — GST 2.0{% endblock %}
 
 {% block content %}
-<div class="row">
-	<div class="col">
-		<h2>Book</h2>
-	</div>
+<div class="page-title">Ledger / Books</div>
+
+<div class="mb-3">
+  <a class="btn btn-success btn-sm" href="#">+ New Ledger</a>
 </div>
 
-<table class="table table-hover font-weight-bold" id="book-table">
-	<thead>
-		<tr>
-			<th>Customer</th>
-			<th>Current Balance</th>
-			<th>Last Transaction</th>
-		</tr>
-	</thead>
-	<tbody class="two-col-form">
-		{% for book in book_list %}
-		<tr onclick="window.location='{% url 'book_logs' book.id %}';">
-			<td><a href="{% url 'book_logs' book.id %}">{{book.customer.customer_name}}</a></td>
-			<td>{{book.current_balance}}</td>
-			<td>{{book.last_log}}</td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
-
-
+<div class="card">
+  <div class="card-body">
+    <table id="books-table" class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Balance (₹)</th>
+          <th>Last Entry</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in book_list %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ b.customer.customer_name }}</td>
+          <td>{{ b.current_balance }}</td>
+          <td>{% if b.last_log %}{{ b.last_log.date }}{% else %}-{% endif %}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'book_logs' b.id %}">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
 
-
 {% block includejs %}
-<script type="text/javascript">
-
-$(document).ready( function () {
-	$('#book-table').DataTable({
-		"order": [],
-		"columnDefs": [ {
-			"targets": 3,
-			"sortable": false,
-			"searchable": false
-		} ],
-		"paging": true
-	});
-});
-
-</script>
+<script> $(function(){ $('#books-table').DataTable(); }); </script>
 {% endblock %}

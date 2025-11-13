@@ -1,53 +1,47 @@
+{# gstbillingapp/templates/gstbillingapp/inventory.html #}
 {% extends "gstbillingapp/base.html" %}
-
-{% load static %}
-
-
+{% block title %}Inventory — GST 2.0{% endblock %}
 
 {% block content %}
-<div class="row">
-	<div class="col">
-		<h2>Inventory</h2>
-	</div>
+<div class="page-title">Inventory</div>
+
+<div class="mb-3">
+  <a class="btn btn-primary btn-sm" href="#">+ Add Stock</a>
+  <span class="ml-3 small text-muted">Untracked products: {{ untracked_products.count }}</span>
 </div>
 
-<table class="table table-hover font-weight-bold" id="inventory-table">
-	<thead>
-		<tr>
-			<th>Product</th>
-			<th>Current Stock</th>
-			<th>Last Transaction</th>
-		</tr>
-	</thead>
-	<tbody class="two-col-form">
-		{% for inventory in inventory_list %}
-		<tr onclick="window.location='{% url 'inventory_logs' inventory.id %}';">
-			<td><a href="{% url 'inventory_logs' inventory.id %}">{{inventory.product.product_name}}</a></td>
-			<td>{{inventory.current_stock}}</td>
-			<td>{{inventory.last_log}}</td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
-
-
+<div class="card">
+  <div class="card-body">
+    <table id="inventory-table" class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Current Stock</th>
+          <th>Alert Level</th>
+          <th>Last Update</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in inventory_list %}
+        <tr class="{% if inv.current_stock <= inv.alert_level %}table-warning{% endif %}">
+          <td>{{ forloop.counter }}</td>
+          <td>{{ inv.product.product_name }}</td>
+          <td>{{ inv.current_stock }}</td>
+          <td>{{ inv.alert_level }}</td>
+          <td>{% if inv.last_log %}{{ inv.last_log.date }}{% else %}-{% endif %}</td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'inventory_logs' inv.id %}">Logs</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}
 
-
 {% block includejs %}
-<script type="text/javascript">
-
-$(document).ready( function () {
-	$('#inventory-table').DataTable({
-		"order": [],
-		"columnDefs": [ {
-			"targets": 3,
-			"sortable": false,
-			"searchable": false
-		} ],
-		"paging": true
-	});
-});
-
-</script>
+<script> $(function(){ $('#inventory-table').DataTable(); }); </script>
 {% endblock %}

@@ -1,98 +1,189 @@
 {% extends "gstbillingapp/base.html" %}
-
-
 {% load static %}
-<!doctype html>
 
-{% block title %}
-DjangoGst - Simplest GST invoicing | Inventory Management | Book keeping
+{% block title %}GST Billing System 2.0 — Dashboard{% endblock %}
+
+{% block includecss %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body { background:#f5f7fb; font-family:"Inter", sans-serif; }
+
+  .hero {
+    background: linear-gradient(90deg, #004aad 0%, #2563eb 50%, #3b82f6 100%);
+    border-radius: 14px;
+    padding: 40px 36px;
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  }
+  .hero-title { font-size: 36px; font-weight: 700; }
+  .hero-sub { font-size: 17px; opacity:.95; margin-top: 4px; }
+
+  .quick-btn { margin-top:20px; }
+  .quick-btn .btn {
+    padding: 10px 18px;
+    font-weight:600;
+    border-radius:8px;
+  }
+
+  .dashboard-section-title {
+    font-size:22px; 
+    font-weight:700; 
+    color:#1f2d5a; 
+    margin-top:26px; 
+    margin-bottom:14px;
+  }
+
+  .dash-card {
+    background:#fff;
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.06);
+    transition: all 0.2s ease-in-out;
+  }
+  .dash-card:hover {
+    transform:translateY(-4px);
+    box-shadow:0 8px 28px rgba(0,0,0,0.08);
+  }
+  .dash-card h3 {
+    font-size:26px;
+    font-weight:700;
+    color:#004aad;
+  }
+  .dash-card p {
+    font-size:14px;
+    color:#6c7a92;
+    margin-bottom:0;
+  }
+
+  .big-icon {
+    font-size:32px; 
+    color:#004aad; 
+    margin-bottom:12px;
+  }
+  .quick-links .btn {
+    border-radius:8px;
+    font-weight:600;
+    padding:10px 14px;
+    margin-right:10px;
+    margin-bottom:10px;
+  }
+
+</style>
 {% endblock %}
 
-{% block metatags %}
-<meta name="description" content="Create GST invoice/bills for free. Automatic inventory Management and Books management.">
-<meta name="google-site-verification" content="MJbX1a9Fs1MIE1tnpRnp4At9OzVMxoumTAvOWUlG8-w" />
-<link rel="canonical" href="https://billgst.in/" />
-
-<meta property="og:title" content="BillGST - Simplest GST invoicing | Inventory Management | Book keeping" />
-<meta property="og:url" content="https://billgst.in" />
-<meta property="og:image" content="https://billgst.in{% static "gstbillingapp/images/screenshot_interface.png" %}" />
-{% endblock %}
 
 {% block content %}
 
-<div class="jumbotron">
-	<h1 class="display-3">DjangoGST</h1>
-	<h2 class="display-6">Simplest <b>GST invoicing</b> app.</h2>
-	<hr class="my-4">
-	<h4>
-	<ul>
-		 <li>Easily create invoices</li>
-		 <li>Manage inventory</li>
-		 <li>Keep books and track balances</li>
-	</ul>
-	</h4>
-	<p class="lead">
-		<a class="btn btn-primary btn-lg" href="{% url 'invoice_create' %}" role="button">Create Invoice</a>
-	</p>
+<!-- HERO SECTION -->
+<div class="hero mt-3">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <div class="hero-title">GST Billing System <span style="color:#ffd700;">2.0</span></div>
+      <div class="hero-sub">Smart invoicing, Inventory tracking & Customer billing — fully upgraded for GST 2.0</div>
+
+      <div class="quick-btn">
+        <a href="{% url 'invoice_create' %}" class="btn btn-warning text-dark mr-2">➕ Create Invoice</a>
+        <a href="{% url 'invoices' %}" class="btn btn-light text-dark">📄 View All Invoices</a>
+      </div>
+    </div>
+
+    <div class="col-md-4 text-center d-none d-md-block">
+      <img src="{% static 'gstbillingapp/images/screenshot_interface.png' %}" class="img-fluid rounded shadow" style="max-height:200px;">
+    </div>
+  </div>
 </div>
+
+<!-- DASHBOARD SUMMARY -->
+<div class="dashboard-section-title">Dashboard Summary</div>
 
 <div class="row">
-	<div class="col d-flex align-items-stretch">
-		<div class="card text-white bg-primary mb-3">
-			<div class="card-body">
-			<h4 class="card-title">Simple Interface</h4>
-			<img class="img-fluid" src="{% static "gstbillingapp/images/screenshot_interface.png" %}" alt="Simple Interface">
-			</div>
-		</div>
-	</div>
-	<div class="col d-flex align-items-stretch">
-		<div class="card text-white bg-primary mb-3">
-			<div class="card-body">
-			<h4 class="card-title">Customer and Product Search</h4>
-			<img class="img-fluid" src="{% static "gstbillingapp/images/screenshot_search.png" %}" alt="Customer and Product Search">
-			</div>
-		</div>
-	</div>
-<!-- 	<div class="col d-flex align-items-stretch">
-		<div class="card text-white bg-primary mb-3">
-			<div class="card-body">
-			<h4 class="card-title">Printable Invoices</h4>
-			<ul>
-				<li><h5>Clean Invoice Format</h5></li>
-			</ul>
-			<ul>
-				<li><h5>Print Invoices directly with one click.</h5></li>
-			</ul>
-			<ul>
-				<li><h5>Save Invoices as PDF</h5></li>
-			</ul>
-			</div>
-		</div>
-	</div>
- -->
- 	<div class="col d-flex align-items-stretch">
-		<div class="card text-white bg-primary mb-3">
-			<div class="card-body">
-			<h4 class="card-title">Manage Books and Balances</h4>
-			<img class="img-fluid" src="{% static "gstbillingapp/images/screenshot_books.png" %}" alt="Manage books and balances">
-			</div>
-		</div>
-	</div>
+  <div class="col-md-3 mb-3">
+    <div class="dash-card">
+      <div class="big-icon">📄</div>
+      <h3>{{ invoices.count }}</h3>
+      <p>Total Invoices</p>
+    </div>
+  </div>
 
-	 <div class="col d-flex align-items-stretch">
-		<div class="card text-white bg-primary mb-3">
-			<div class="card-body">
-			<h4 class="card-title">Easy Inventory Management</h4>
-			<img class="img-fluid" src="{% static "gstbillingapp/images/screenshot_inventory.png" %}" alt="Manage inventory easily">
-			</div>
-		</div>
-	</div>
+  <div class="col-md-3 mb-3">
+    <div class="dash-card">
+      <div class="big-icon">👥</div>
+      <h3>{{ customers.count }}</h3>
+      <p>Total Customers</p>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="dash-card">
+      <div class="big-icon">📦</div>
+      <h3>{{ products.count }}</h3>
+      <p>Total Products</p>
+    </div>
+  </div>
+
+  <div class="col-md-3 mb-3">
+    <div class="dash-card">
+      <div class="big-icon">⚠️</div>
+      <h3>{{ low_stock_count|default:"0" }}</h3>
+      <p>Low Stock Alerts</p>
+    </div>
+  </div>
 </div>
 
+<!-- QUICK LINKS -->
+<div class="dashboard-section-title">Quick Actions</div>
+<div class="quick-links">
+  <a href="{% url 'invoice_create' %}" class="btn btn-primary">➕ Create Invoice</a>
+  <a href="{% url 'customer_add' %}" class="btn btn-success">➕ Add Customer</a>
+  <a href="{% url 'product_add' %}" class="btn btn-info text-white">➕ Add Product</a>
+  <a href="{% url 'inventory' %}" class="btn btn-secondary">📦 Inventory</a>
+</div>
 
+<!-- FEATURE CARDS -->
+<div class="dashboard-section-title">Features</div>
+
+<div class="row">
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>⚡ Fast GST 2.0 Invoicing</h5>
+      <p>Smart auto-calculations, IGST/CGST/SGST split, modern UX.</p>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>🔍 Customer & Product Search</h5>
+      <p>Quick search with autosuggestions and fast entry.</p>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>📘 Ledger & Balance Management</h5>
+      <p>Auto deduct balances, track transactions and books.</p>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>📦 Inventory Tracking</h5>
+      <p>Stock auto-update on invoicing with alert levels.</p>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>🧾 One-Click Invoice Print</h5>
+      <p>Clean printable invoice format with GST 2.0 structure.</p>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-3">
+    <div class="dash-card">
+      <h5>☁ Cloud-Ready Backend</h5>
+      <p>Portable Django app — deploy anywhere easily.</p>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
-
-
-

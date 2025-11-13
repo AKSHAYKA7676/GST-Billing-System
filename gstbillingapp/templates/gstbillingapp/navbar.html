@@ -1,35 +1,49 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-	<a class="navbar-brand" href="{% url 'landing_page' %}">Python Django GST Billing</a>
-	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-		<span class="navbar-toggler-icon"></span>
-	</button>
+{# gstbillingapp/templates/gstbillingapp/navbar.html #}
+<nav class="navbar navbar-expand-lg navbar-gst20">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="{% url 'invoices' %}">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="margin-right:8px">
+        <rect x="2" y="3" width="20" height="18" rx="3" fill="#ffd700"></rect>
+        <path d="M6 8h12M6 12h12M6 16h7" stroke="#004aad" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span style="color:#fff">GST Billing <small style="color:#fff;opacity:.9;margin-left:6px">2.0</small></span>
+    </a>
 
-	<div class="collapse navbar-collapse" id="navbarSupportedContent">
-		<ul class="navbar-nav mr-auto">
-			{% if user.is_authenticated %}
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'invoice_create' %}">New Invoice <span class="sr-only">(current)</span></a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'invoices' %}">Invoices</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'inventory' %}">Inventory</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'books' %}">Books</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'customers' %}">Customers</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'products' %}">Products</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="{% url 'user_profile' %}">Profile</a>
-			</li>
-			
-			{% endif %}
-		</ul>
-	</div>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navItems">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navItems">
+      <ul class="navbar-nav ml-auto align-items-lg-center">
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'invoice_create' %}">Create Invoice</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'invoices' %}">Invoices</a>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="masterMenu" role="button" data-toggle="dropdown">
+            Masters
+          </a>
+          <div class="dropdown-menu" aria-labelledby="masterMenu">
+            <a class="dropdown-item" href="{% url 'products' %}">Products</a>
+            <a class="dropdown-item" href="{% url 'customers' %}">Customers</a>
+            <a class="dropdown-item" href="{% url 'inventory' %}">Inventory</a>
+            <a class="dropdown-item" href="{% url 'books' %}">Ledger</a>
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'user_profile' %}">My Profile</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </nav>

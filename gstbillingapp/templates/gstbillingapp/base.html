@@ -3,92 +3,148 @@
 <html lang="en">
 <head>
 
-	<!-- Required meta tags -->
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
 	<title>
 		{% block title %}
-		GST Billing
+		GST Billing System 2.0
 		{% endblock %}
 	</title>
 
-	{% block metatags %}
-	{% endblock %}
+	<!-- Bootstrap Theme -->
+	<link rel="stylesheet" href="{% static 'gstbillingapp/bootstrap-4.4.1-dist/css/bootstrap-cosmo.min.css' %}">
+	<link rel="stylesheet" href="{% static 'gstbillingapp/main.css' %}">
 
+	<!-- DataTables -->
+	<link rel="stylesheet" href="{% static 'gstbillingapp/DataTables/jquery.dataTables.min.css' %}">
+	<link rel="stylesheet" href="{% static 'gstbillingapp/DataTables/dataTables.bootstrap4.min.css' %}">
 
+	<style>
+		/* GST 2.0 Branding Colors */
+		.navbar-gst20 {
+			background: #004aad;
+			padding: 15px;
+		}
 
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="{% static "gstbillingapp/bootstrap-4.4.1-dist/css/bootstrap-cosmo.min.css" %}">
-	<link rel="stylesheet" href="{% static "gstbillingapp/main.css" %}">
+		.navbar-gst20 .navbar-brand {
+			font-size: 22px;
+			font-weight: 700;
+			color: #fff !important;
+			letter-spacing: 0.5px;
+		}
 
-	<!-- DataTables CSS  -->
-	<link rel="stylesheet" href="{% static "gstbillingapp/DataTables/jquery.dataTables.min.css" %}">
-	<link rel="stylesheet" href="{% static "gstbillingapp/DataTables/dataTables.bootstrap4.min.css" %}">
+		.navbar-gst20 .nav-link {
+			color: #dfe6f0 !important;
+			font-weight: 500;
+			margin-right: 15px;
+		}
 
-	{% block includecss %}
-	{% endblock %}
+		.navbar-gst20 .nav-link:hover {
+			color: #fff !important;
+		}
+
+		.page-title {
+			font-size: 26px;
+			font-weight: 700;
+			margin-top: 25px;
+			margin-bottom: 10px;
+			color: #004aad;
+		}
+
+		.container {
+			padding-top: 20px;
+		}
+
+		.alert {
+			margin-top: 10px;
+		}
+	</style>
+
+	{% block includecss %}{% endblock %}
 
 </head>
 
 <body>
 
-	<div class="container">
-		<!-- Content here -->
+	<!-- ==============================
+	     TOP NAVIGATION – GST 2.0
+	================================= -->
+	<nav class="navbar navbar-expand-lg navbar-gst20">
+		<a class="navbar-brand" href="/invoices">
+			GST Billing System <span style="color:#ffd700;">2.0</span>
+		</a>
 
-		{% include "gstbillingapp/navbar.html" %}
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navItems">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navItems">
+			<ul class="navbar-nav ml-auto">
+
+				<li class="nav-item">
+					<a class="nav-link" href="/invoice_create">Create Invoice</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/invoices">All Invoices</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/products">Products</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/customers">Customers</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/inventory">Inventory</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/books">Ledger</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/user_profile">Profile</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" href="/logout">Logout</a>
+				</li>
+
+			</ul>
+		</div>
+	</nav>
+
+
+
+	<!-- MAIN PAGE CONTENT -->
+	<div class="container">
 
 		{% if error_message %}
-		<div class="alert alert-danger" role="alert">
-			{{error_message}}
-		</div>
+			<div class="alert alert-danger">{{ error_message }}</div>
 		{% endif %}
 
 		{% if success_message %}
-		<div class="alert alert-success" role="alert">
-			{{success_message}}
-		</div>
+			<div class="alert alert-success">{{ success_message }}</div>
 		{% endif %}
 
 		{% block content %}
-		CONTENT BLOCK
+			CONTENT BLOCK
 		{% endblock %}
-
 	</div>
 
 
+	<!-- JS -->
+	<script src="{% static 'gstbillingapp/js/jquery-3.4.1.min.js' %}"></script>
+	<script src="{% static 'gstbillingapp/js/popper.min.js' %}"></script>
+	<script src="{% static 'gstbillingapp/bootstrap-4.4.1-dist/js/bootstrap.min.js' %}"></script>
 
+	<script src="{% static 'gstbillingapp/DataTables/jquery.dataTables.min.js' %}"></script>
 
-	<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-	
-	<!-- 	<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script> -->
-	<script src="{% static "gstbillingapp/js/jquery-3.4.1.min.js" %}"></script>
-	<script src="{% static "gstbillingapp/js/popper.min.js" %}"></script>
-
-	<script src="{% static "gstbillingapp/bootstrap-4.4.1-dist/js/bootstrap.min.js" %}"></script>
-
-	<!-- DataTables  -->
-	<script src="{% static "gstbillingapp/DataTables/jquery.dataTables.min.js" %}"></script>
-
-
-	{% block includejs %}
-	{% endblock %}
-
-
-
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-159304253-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-159304253-1');
-</script>
-
-
+	{% block includejs %}{% endblock %}
 
 </body>
-
-
 </html>

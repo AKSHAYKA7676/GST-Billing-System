@@ -6,7 +6,8 @@ from . import views
 urlpatterns = [
     path('', views.landing_page, name='landing_page'),
 
-    path('invoices/new', views.invoice_create, name='invoice_create'),
+  path('invoice_create', views.invoice_create, name='invoice_create'),
+
     path('invoices/delete', views.invoice_delete, name='invoice_delete'),
 
     path('login', views.login_view, name='login_view'),

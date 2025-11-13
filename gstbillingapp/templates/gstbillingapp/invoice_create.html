@@ -1,146 +1,439 @@
 {% extends "gstbillingapp/base.html" %}
-
-
 {% load static %}
-<!doctype html>
+{% block title %}Create Invoice — GST Billing System 2.0{% endblock %}
+
+{% block includecss %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#0b63d0; /* blue accent */
+    --muted:#6b788a;
+    --card:#ffffff;
+    --glass: rgba(11,99,208,0.06);
+  }
+  body { font-family: "Inter", Arial, sans-serif; background:#f6f8fb; }
+
+  .page-title { font-weight:700; color:var(--primary); font-size:24px; margin-bottom:6px; }
+  .page-sub { color:var(--muted); font-size:13px; margin-bottom:18px; }
+
+  .layout {
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:18px;
+    align-items:start;
+  }
+
+  .card-form {
+    background:var(--card);
+    padding:18px;
+    border-radius:10px;
+    box-shadow: 0 6px 20px rgba(19,35,67,0.06);
+  }
+
+  .card-totals {
+    position:sticky;
+    top:20px;
+    background:var(--card);
+    padding:18px;
+    border-radius:10px;
+    box-shadow: 0 6px 20px rgba(19,35,67,0.06);
+  }
+
+  .two-grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .field-label { font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+
+  /* items table */
+  .items-table { width:100%; border-collapse:collapse; margin-top:8px; }
+  .items-table th { background:#f2f7ff; color:var(--primary); font-weight:700; padding:8px; font-size:13px; }
+  .items-table td { padding:6px; vertical-align:middle; }
+  .items-table input { border:1px solid #e8eefb; border-radius:6px; padding:6px 8px; width:100%; }
+
+  .btn-primary { background:var(--primary); border-color:var(--primary); }
+  .btn-link-muted { color:var(--muted); font-size:13px; text-decoration:underline; background:none; border:none; padding:0; }
+
+  .summary-line { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f0f4fb; }
+  .summary-total { font-size:20px; font-weight:700; color:var(--primary); }
+
+  .small-muted { font-size:12px; color:var(--muted); }
+
+  @media (max-width:980px){
+    .layout { grid-template-columns: 1fr; }
+    .card-totals { position:static; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="card-form">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <div class="page-title">Create Invoice</div>
+      <div class="page-sub">Zoho-style professional invoice UI — GST 2.0 compliant</div>
+    </div>
+    <div class="text-right">
+      <a href="{% url 'invoices' %}" class="btn btn-outline-secondary mr-2">Back</a>
+      <button id="preview-btn" class="btn btn-light">Preview</button>
+    </div>
+  </div>
 
-<h2>Create Invoice</h2>
+  <form method="POST" id="invoice-form">
+    {% csrf_token %}
 
-<form method="POST" id="invoice-form" hidden="true">
+    <div class="two-grid">
+      <div>
+        <label class="field-label">Invoice Number</label>
+        <input name="invoice-number" type="number" class="form-control" value="{{ default_invoice_number }}" required>
+      </div>
+      <div>
+        <label class="field-label">Invoice Date</label>
+        <input name="invoice-date" type="date" class="form-control" value="{{ default_invoice_date }}" required>
+      </div>
+    </div>
 
-	<table class="table table-bordered">
-		<thead>
-			<tr>
-				<th class="table-active" scope="col" colspan="4">Invoice Details</th>
-			</tr>
-		</thead>
+    <div style="height:12px"></div>
 
-		<tbody class="two-col-form">
-			<tr>
-				<th scope="row">Invoice Number</th>
-				<td class="form-input-td"><input name="invoice-number" type="number" class="form-control" placeholder="Invoice Number" value="{{default_invoice_number}}"></td>
-				<th scope="row">Date</th>
-				<td class="form-input-td"><input name="invoice-date" type="date" class="form-control", value="{{default_invoice_date}}"></td>
-			</tr>
-		</tbody>
-	</table>
+    <div class="two-grid">
+      <div>
+        <label class="field-label">Customer</label>
+        <!-- datalist populated by JS -->
+        <input list="customers-list" name="customer-name" id="customer-name" class="form-control" placeholder="Search or type new customer" required>
+        <datalist id="customers-list"></datalist>
+      </div>
+      <div>
+        <label class="field-label">GSTIN / Phone</label>
+        <input name="customer-gst" id="customer-gst" class="form-control" placeholder="GSTIN (optional)">
+      </div>
+    </div>
 
-	<table class="table table-bordered">
-		<thead>
-			<tr>
-				<th class="table-active" scope="col" colspan="4">Customer Details</th>
-			</tr>
-		</thead>
+    <div style="height:12px"></div>
 
-		<tbody class="two-col-form">
-			<tr>
-				<th scope="row">Customer Name</th>
-				<td class="form-input-td customer_search_area"><input autocomplete="off" name="customer-name" type="text" class="form-control customer_search_input" id="customer-name-input" placeholder="Customer Name" required>
-				</td>
-				<th scope="row">Customer Address</th>
-				<td class="form-input-td"><input autocomplete="off" name="customer-address" type="text" class="form-control" id="customer-address-input" placeholder="Customer Address" required></td>
-			</tr>
-			<tr>
-				<th scope="row">Customer Mobile Number</th>
-				<td class="form-input-td"><input autocomplete="off" name="customer-phone" type="tel" class="form-control" id="customer-phone-input" placeholder="Customer Mobile Number"></td>
-				<th scope="row">Customer GST</th>
-				<td class="form-input-td"><input autocomplete="off" name="customer-gst" type="text" class="form-control" id="customer-gst-input" placeholder="Customer GST" maxlength="15" pattern="([A-Za-z0-9]{15})|(^$)"></td>
-			</tr>
+    <div class="two-grid">
+      <div>
+        <label class="field-label">Address</label>
+        <input name="customer-address" id="customer-address" class="form-control" placeholder="Customer address">
+      </div>
+      <div>
+        <label class="field-label">Mobile</label>
+        <input name="customer-phone" id="customer-phone" class="form-control" placeholder="Customer phone">
+      </div>
+    </div>
 
-		</tbody>
-	</table>
+    <div style="height:16px"></div>
 
-	<table class="table table-bordered">
-		<tbody class="two-col-form">
-			<tr>
-				<th scope="row">Vehicle Number</th>
-				<td class="form-input-td"><input autocomplete="off" name="vehicle-number" type="text" class="form-control" placeholder="Vehicle Number">
-				</td>
-				<th scope="row"></th>
-				<td class="form-input-td">
-					<div class="form-check">
-						<input class="form-check-input" name="igstcheck" type="checkbox" id="igstcheck">
-						<label class="form-check-label" for="igstcheck">
-							IGST
-						</label>
-					</div>
-				</td>
-			</tr>
-		</tbody>
-	</table>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div style="font-weight:700; color:#223254">Items</div>
+      <div>
+        <button id="add-row" type="button" class="btn btn-primary btn-sm">+ Add Item</button>
+        <button id="clear-rows" type="button" class="btn btn-outline-secondary btn-sm">Clear</button>
+      </div>
+    </div>
 
-	<table class="table table-bordered" id="invoice-form-items-table">
-		<thead>
-			<th class="table-active" scope="col" colspan="13">Items</th>
+    <div style="overflow:auto;">
+      <table class="items-table" id="items-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th style="min-width:220px">Product</th>
+            <th style="width:90px">HSN</th>
+            <th style="width:80px">Unit</th>
+            <th style="width:80px">Qty</th>
+            <th style="width:120px">Rate (with GST)</th>
+            <th style="width:80px">GST %</th>
+            <th style="width:120px">Rate (without GST)</th>
+            <th style="width:120px">Value (without GST)</th>
+            <th style="width:100px">CGST</th>
+            <th style="width:100px">SGST</th>
+            <th style="width:100px">IGST</th>
+            <th style="width:120px">Total</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="items-body">
+          <tr class="item-row">
+            <td class="sl">1</td>
+            <td>
+              <input list="products-list" name="invoice-product" class="form-control product-input" placeholder="Product name">
+            </td>
+            <td><input name="invoice-hsn" class="form-control"></td>
+            <td><input name="invoice-unit" class="form-control"></td>
+            <td><input name="invoice-qty" type="number" step="any" min="0" value="1" class="form-control qty"></td>
+            <td><input name="invoice-rate-with-gst" type="number" step="any" min="0" value="0" class="form-control rate-gst"></td>
+            <td><input name="invoice-gst-percentage" type="number" step="any" min="0" value="0" class="form-control gst-percent"></td>
 
-			<tr>
-				<th scope="col">Sl No.</th>
-				<th scope="col">Product</th>
-				<th scope="col">HSN / SAC</th>
-				<th scope="col">Unit</th>
-				<th scope="col">Qty</th>
-				<th scope="col">Rate with GST</th>
-				<th scope="col">GST %</th>
-				<th scope="col">Rate without GST</th>
+            <td><input name="invoice-rate-without-gst" readonly class="form-control rate-nogst"></td>
+            <td><input name="invoice-amt-without-gst" readonly class="form-control val-nogst"></td>
 
+            <td><input name="invoice-amt-cgst" readonly class="form-control cgst-val"></td>
+            <td><input name="invoice-amt-sgst" readonly class="form-control sgst-val"></td>
+            <td><input name="invoice-amt-igst" readonly class="form-control igst-val"></td>
 
-				<th scope="col">Amt without GST</th>
-				<th scope="col">SGST</th>
-				<th scope="col">CGST</th>
-				<th scope="col">IGST</th>
-				<th scope="col">Amt with GST</th>
+            <td><input name="invoice-amt-with-gst" readonly class="form-control total-val"></td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-			</tr>
-		</thead>
-		<tbody id="invoice-form-items-table-body">
-			<tr>
-				<td class="invoice-item-slno">1</td>
-				<td class="form-input-td"><input name="invoice-product" type="text" class="form-control product_search_area product_search_input" placeholder="Product"></td>
-				<td class="form-input-td"><input name="invoice-hsn" type="text" class="form-control" placeholder="HSN"></td>
-				<td class="form-input-td"><input name="invoice-unit" type="text" class="form-control" placeholder="Unit"></td>
-				<td class="form-input-td"><input name="invoice-qty" type="number" step="any" class="form-control" placeholder="Qty"></td>
-				<td class="form-input-td"><input name="invoice-rate-with-gst" type="number" step="any" class="form-control" placeholder="Rate with GST"></td>
-				<td class="form-input-td"><input name="invoice-gst-percentage" type="number" step="any" class="form-control" placeholder="GST %"></td>
+    <!-- hidden totals for backend (names must match) -->
+    <input name="invoice-total-amt-without-gst" type="hidden" id="hidden-total-nogst">
+    <input name="invoice-total-amt-sgst" type="hidden" id="hidden-total-sgst">
+    <input name="invoice-total-amt-cgst" type="hidden" id="hidden-total-cgst">
+    <input name="invoice-total-amt-igst" type="hidden" id="hidden-total-igst">
+    <input name="invoice-total-amt-with-gst" type="hidden" id="hidden-total-gst">
 
+    <div style="height:14px"></div>
 
-				<td class="form-input-td"><input name="invoice-rate-without-gst" type="number" step="any" class="form-control" placeholder="Rate without GST" readonly></td>
-				<td class="form-input-td"><input name="invoice-amt-without-gst" type="number" step="any" class="form-control" readonly></td>
-				<td class="form-input-td"><input name="invoice-amt-sgst" type="number" step="any" class="form-control" readonly></td>
-				<td class="form-input-td"><input name="invoice-amt-cgst" type="number" step="any" class="form-control" readonly></td>
-				<td class="form-input-td"><input name="invoice-amt-igst" type="number" step="any" class="form-control" readonly></td>
-				<td class="form-input-td"><input name="invoice-amt-with-gst" type="number" step="any" class="form-control" readonly></td>
-			</tr>
-		</tbody>
+    <div class="d-flex justify-content-end" style="gap:10px;">
+      <button type="button" id="save-draft" class="btn btn-outline-secondary">Save Draft</button>
+      <button type="submit" class="btn btn-primary">Save & Create</button>
+    </div>
 
-		<tr>
-			<td colspan="8" class="text-right"><strong>TOTAL:</strong></td>
-			<td class="form-input-td"><input name="invoice-total-amt-without-gst" type="number" step="any" class="form-control" readonly></td>
-			<td class="form-input-td"><input name="invoice-total-amt-sgst" type="number" step="any" class="form-control" readonly></td>
-			<td class="form-input-td"><input name="invoice-total-amt-cgst" type="number" step="any" class="form-control" readonly></td>
-			<td class="form-input-td"><input name="invoice-total-amt-igst" type="number" step="any" class="form-control" readonly></td>
-			<td class="form-input-td"><input name="invoice-total-amt-with-gst" type="number" step="any" class="form-control" readonly></td>
-		</tr>
-
-	</table>
-	{% csrf_token %}
-	<button class="btn btn-primary" id="invoice-form-addrow">+</button>
-	<button type="submit" class="btn btn-primary">Submit</button>
-
-</form>
-
-
+  </form>
 </div>
-<div id="customer_search_bar"></div>
-<div id="product_search_bar"></div>
 
+<!-- right column totals -->
+<div class="card-totals">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div style="font-weight:700; color:#223254">Invoice Summary</div>
+      <div class="small-muted">Live totals & GST split</div>
+    </div>
+    <div><span class="badge badge-pill" style="background:#eef6ff; color:var(--primary); font-weight:700">Draft</span></div>
+  </div>
+
+  <div style="height:8px"></div>
+
+  <div class="summary-line">
+    <div class="small-muted">Total (Before GST)</div>
+    <div id="display-total-nogst">₹ 0.00</div>
+  </div>
+
+  <div class="summary-line">
+    <div class="small-muted">Total CGST</div>
+    <div id="display-total-cgst">₹ 0.00</div>
+  </div>
+
+  <div class="summary-line">
+    <div class="small-muted">Total SGST</div>
+    <div id="display-total-sgst">₹ 0.00</div>
+  </div>
+
+  <div class="summary-line">
+    <div class="small-muted">Total IGST</div>
+    <div id="display-total-igst">₹ 0.00</div>
+  </div>
+
+  <div style="height:8px"></div>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="small-muted">Grand Total</div>
+    <div class="summary-total" id="display-grand-total">₹ 0.00</div>
+  </div>
+
+  <div style="height:10px"></div>
+  <div class="small-muted">Amount in words will appear on the printed invoice.</div>
+
+  <div style="height:12px"></div>
+  <div><button id="btn-print-preview" class="btn btn-outline-primary btn-block">Print Preview</button></div>
+</div>
+
+<!-- datalist for products (will be filled by JS) -->
+<datalist id="products-list"></datalist>
 
 {% endblock %}
 
-
-
 {% block includejs %}
-<script src="{% static "gstbillingapp/js/fuse-3.4.6.min.js" %}"></script>
-<script src="{% static "gstbillingapp/js/main.js" %}"></script>
+<script>
+(function(){
+  // --- helpers ---
+  const toNum = v => {
+    if (v === undefined || v === null || v === '') return 0;
+    let n = parseFloat(String(v).replace(/,/g,'')); 
+    return isNaN(n) ? 0 : n;
+  };
+  const fmt = n => Number(n).toFixed(2);
+
+  // --- elements ---
+  const itemsBody = document.getElementById('items-body');
+  const addRowBtn = document.getElementById('add-row');
+  const clearRowsBtn = document.getElementById('clear-rows');
+
+  const displayTotalNoGST = document.getElementById('display-total-nogst');
+  const displayCGST = document.getElementById('display-total-cgst');
+  const displaySGST = document.getElementById('display-total-sgst');
+  const displayIGST = document.getElementById('display-total-igst');
+  const displayGrand = document.getElementById('display-grand-total');
+
+  const hiddenTotalNoGST = document.getElementById('hidden-total-nogst');
+  const hiddenTotalCGST = document.getElementById('hidden-total-cgst');
+  const hiddenTotalSGST = document.getElementById('hidden-total-sgst');
+  const hiddenTotalIGST = document.getElementById('hidden-total-igst');
+  const hiddenTotalGST = document.getElementById('hidden-total-gst');
+
+  // --- dynamic datalists populate ---
+  function populateDatalists(){
+    // products
+    fetch('{% url "productsjson" %}')
+      .then(r => r.json())
+      .then(list => {
+        const productsList = document.getElementById('products-list');
+        productsList.innerHTML = '';
+        list.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.product_name;
+          productsList.appendChild(opt);
+        });
+      }).catch(()=>{ /* ignore */ });
+
+    // customers
+    fetch('{% url "customersjson" %}')
+      .then(r => r.json())
+      .then(list => {
+        const customersList = document.getElementById('customers-list');
+        customersList.innerHTML = '';
+        list.forEach(c => {
+          const opt = document.createElement('option');
+          const label = c.customer_name + (c.customer_gst ? ' — ' + c.customer_gst : '') + (c.customer_phone ? ' — ' + c.customer_phone : '');
+          opt.value = c.customer_name;
+          customersList.appendChild(opt);
+        });
+      }).catch(()=>{ /* ignore */ });
+  }
+
+  // --- add / remove rows ---
+  function renumberRows(){
+    document.querySelectorAll('.item-row').forEach((r,i)=>{
+      const sl = r.querySelector('.sl'); if(sl) sl.textContent = i+1;
+    });
+  }
+
+  function attachRowEvents(tr){
+    // update on input changes
+    tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', updateAll));
+    const rm = tr.querySelector('.remove-row');
+    rm.addEventListener('click', function(){ tr.remove(); renumberRows(); updateAll(); });
+  }
+
+  addRowBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    const idx = itemsBody.querySelectorAll('.item-row').length + 1;
+    const tr = document.createElement('tr');
+    tr.className = 'item-row';
+    tr.innerHTML = `
+      <td class="sl">${idx}</td>
+      <td><input list="products-list" name="invoice-product" class="form-control product-input" placeholder="Product name"></td>
+      <td><input name="invoice-hsn" class="form-control"></td>
+      <td><input name="invoice-unit" class="form-control"></td>
+      <td><input name="invoice-qty" type="number" step="any" min="0" value="1" class="form-control qty"></td>
+      <td><input name="invoice-rate-with-gst" type="number" step="any" min="0" value="0" class="form-control rate-gst"></td>
+      <td><input name="invoice-gst-percentage" type="number" step="any" min="0" value="0" class="form-control gst-percent"></td>
+
+      <td><input name="invoice-rate-without-gst" readonly class="form-control rate-nogst"></td>
+      <td><input name="invoice-amt-without-gst" readonly class="form-control val-nogst"></td>
+
+      <td><input name="invoice-amt-cgst" readonly class="form-control cgst-val"></td>
+      <td><input name="invoice-amt-sgst" readonly class="form-control sgst-val"></td>
+      <td><input name="invoice-amt-igst" readonly class="form-control igst-val"></td>
+
+      <td><input name="invoice-amt-with-gst" readonly class="form-control total-val"></td>
+      <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">✕</button></td>
+    `;
+    itemsBody.appendChild(tr);
+    attachRowEvents(tr);
+    renumberRows();
+  });
+
+  clearRowsBtn.addEventListener('click', function(){
+    // remove extra rows, keep one blank
+    const rows = itemsBody.querySelectorAll('.item-row');
+    rows.forEach((r,i) => { if (i>0) r.remove(); else {
+      // reset first
+      r.querySelectorAll('input').forEach(inp => { if (!inp.readOnly) inp.value = ''; });
+      r.querySelector('.qty').value = 1;
+      r.querySelector('.rate-gst').value = 0;
+      r.querySelector('.gst-percent').value = 0;
+    }});
+    renumberRows();
+    updateAll();
+  });
+
+  // attach existing rows
+  document.querySelectorAll('.item-row').forEach(attachRowEvents);
+
+  // --- calculation ---
+  function updateAll(){
+    const rows = document.querySelectorAll('.item-row');
+    let totalNoGST = 0, totalCGST = 0, totalSGST = 0, totalIGST = 0, grandTotal = 0;
+
+    rows.forEach(row => {
+      const qty = toNum(row.querySelector('.qty')?.value);
+      const rateWith = toNum(row.querySelector('.rate-gst')?.value);
+      const gstPercent = toNum(row.querySelector('.gst-percent')?.value);
+
+      // compute rate without gst
+      const rateNo = gstPercent > 0 ? (rateWith / (1 + gstPercent/100)) : rateWith;
+      const valNo = qty * rateNo;
+      const tax = valNo * gstPercent / 100;
+
+      // decide IGST or CGST/SGST based on customer gst presence vs vendor? keep default split half-half (CGST/SGST)
+      // If customer_gst input is empty we won't change: still split to CGST/SGST
+      let cgst = tax/2, sgst = tax/2, igst = 0;
+
+      // write back values
+      row.querySelector('.rate-nogst').value = fmt(rateNo);
+      row.querySelector('.val-nogst').value = fmt(valNo);
+      row.querySelector('.cgst-val').value = fmt(cgst);
+      row.querySelector('.sgst-val').value = fmt(sgst);
+      row.querySelector('.igst-val').value = fmt(igst);
+      row.querySelector('.total-val').value = fmt(valNo + tax);
+
+      totalNoGST += valNo;
+      totalCGST += cgst;
+      totalSGST += sgst;
+      totalIGST += igst;
+      grandTotal += (valNo + tax);
+    });
+
+    // set displays
+    displayTotalNoGST.textContent = "₹ " + fmt(totalNoGST);
+    displayCGST.textContent = "₹ " + fmt(totalCGST);
+    displaySGST.textContent = "₹ " + fmt(totalSGST);
+    displayIGST.textContent = "₹ " + fmt(totalIGST);
+    displayGrand.textContent = "₹ " + fmt(grandTotal);
+
+    // hidden inputs for backend
+    hiddenTotalNoGST.value = fmt(totalNoGST);
+    hiddenTotalCGST.value = fmt(totalCGST);
+    hiddenTotalSGST.value = fmt(totalSGST);
+    hiddenTotalIGST.value = fmt(totalIGST);
+    hiddenTotalGST.value = fmt(grandTotal);
+  }
+
+  // init
+  populateDatalists();
+  updateAll();
+
+  // update when inputs change
+  document.getElementById('items-table').addEventListener('input', updateAll);
+
+  // preview / print handlers
+  document.getElementById('btn-print-preview').addEventListener('click', function(){
+    alert('Print preview opens when invoice is saved. Use View after saving to print.');
+  });
+  document.getElementById('preview-btn').addEventListener('click', function(){ alert('Preview works after saving invoice.'); });
+
+  // Save draft (simple UX - submit form but with extra flag)
+  document.getElementById('save-draft').addEventListener('click', function(){
+    const form = document.getElementById('invoice-form');
+    const inpf = document.createElement('input'); inpf.type='hidden'; inpf.name='save_draft'; inpf.value='1';
+    form.appendChild(inpf);
+    updateAll();
+    form.submit();
+  });
+
+  // ensure totals updated before real submit
+  document.getElementById('invoice-form').addEventListener('submit', function(){ updateAll(); });
+
+})();
+</script>
 {% endblock %}

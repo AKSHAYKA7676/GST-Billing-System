@@ -1,175 +1,126 @@
-{% extends "gstbillingapp/print_base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - GST 2.0</title>
 
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        th { background: #f3f3f3; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .gst2 { color: #0066cc; font-weight: bold; }
+        .small { font-size: 13px; color: #666; }
+        .total-box { float: right; width: 40%; }
+    </style>
+</head>
 
-{% block content %}
+<body>
 
-	<div class="card">
-		<div class="card-header">
-			<div class="row">
-			<div class="col-sm-6 col-6"><strong>Invoice Date: {{invoice.invoice_date}}</strong></div> 
-			<div class="col-sm-6 text-right col-6"><strong>Invoice No:{{invoice.invoice_number}}</strong></div>
-			</div>
-		</div>
+<div class="header">
+    <h2>{{ user_profile.business_title }}</h2>
+    <p>{{ user_profile.business_address }}</p>
+    <p>
+        GSTIN: {{ user_profile.business_gst }} |
+        Email: {{ user_profile.business_email }} |
+        Phone: {{ user_profile.business_phone }}
+    </p>
+    <h3 class="gst2">GST SYSTEM 2.0 – TAX INVOICE</h3>
+</div>
 
-		<div class="card-body">
-			<div class="row">
+<hr>
 
+<h3>Invoice Details</h3>
+<table>
+    <tr>
+        <th>Invoice No</th>
+        <td>{{ invoice.invoice_number }}</td>
+        <th>Date</th>
+        <td>{{ invoice.invoice_date }}</td>
+    </tr>
+    <tr>
+        <th>Customer Name</th>
+        <td>{{ invoice.invoice_customer.customer_name }}</td>
+        <th>GSTIN</th>
+        <td>{{ invoice.invoice_customer.customer_gst }}</td>
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td colspan="3">{{ invoice.invoice_customer.customer_address }}</td>
+    </tr>
+</table>
 
-				<div class="col-sm-6 col-md-6 col-lg-6 col-6">
-					<div>
-						<strong>{{user_profile.business_title}}</strong>
-					</div>
-						<div id="invoice_profile_data">{{user_profile.business_address}}</div>
-					{% if user_profile.business_email %}
-						<div>EMAIL: {{user_profile.business_email}}</div>
-					{% endif %}
-					{% if user_profile.business_phone %}
-						<div>Phone: {{user_profile.business_phone}}</div>
-					{% endif %}
-					{% if user_profile.business_gst %}
-						<div>GST No: {{user_profile.business_gst}}</div>
-					{% endif %}
-				</div>
+<h3>Item Details – GST 2.0 Format</h3>
 
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>HSN</th>
+            <th>Qty</th>
+            <th>Rate</th>
+            <th>GST %</th>
+            <th>Pre-GST Value</th>
+            <th>CGST</th>
+            <th>SGST</th>
+            <th>Total</th>
+        </tr>
+    </thead>
 
+    <tbody>
+        {% for item in invoice_data.items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.product_hsn }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.rate_without_gst }}</td>
+            <td>{{ item.gst_percent }}%</td>
 
-				<div class="col-sm-6 col-md-6 col-lg-6 col-6">
-					<h6 class="mb-3">Billed To:</h6>
-					<div>
-						<strong>{{ invoice_data.customer_name }}</strong>
-					</div>
-					<div>{{ invoice_data.customer_address }}</div>
-					<div>Phone: {{ invoice_data.customer_phone }}</div>
-					<div>GST No: {{ invoice_data.customer_gst }}</div>
-					{% if invoice_data.vehicle_number %}
-					<div><strong>Vehicle No:</strong> {{ invoice_data.vehicle_number }}</div>
-					{% endif %}
-				</div>
+            <!-- GST 2.0 Calculations -->
+            <td>{{ item.value_without_gst }}</td>
+            <td>{{ item.cgst_value }}</td>
+            <td>{{ item.sgst_value }}</td>
+            <td>{{ item.total_value_with_gst }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
+<br>
 
+<div class="total-box">
+    <table>
+        <tr>
+            <th>Total Before GST</th>
+            <td>{{ invoice_data.total_without_gst }}</td>
+        </tr>
+        <tr>
+            <th>Total CGST</th>
+            <td>{{ invoice_data.total_cgst }}</td>
+        </tr>
+        <tr>
+            <th>Total SGST</th>
+            <td>{{ invoice_data.total_sgst }}</td>
+        </tr>
+        <tr>
+            <th>Grand Total (GST 2.0)</th>
+            <td><strong>₹ {{ invoice_data.invoice_total_amt_with_gst }}</strong></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="small">Amount in Words: <b>{{ total_in_words }}</b></td>
+        </tr>
+    </table>
+</div>
 
-			</div>
+<br><br><br>
 
-			<div class="table-responsive-sm">
-				<table class="table table-striped table-invoice">
-					<thead>
-						<tr>
-							<th class="text-center">#</th>
-							<th class="text-left">Item</th>
-							<th class="text-center">HSN / SAC</th>
-							<th class="text-center">Unit</th>
-							<th class="text-right">Qty</th>
-							<th class="text-right">Rate ({{ currency }})</th>
-							<th class="text-right">Taxable Amount ({{ currency }})</th>
-							<th class="text-right">GST (%)</th>
-							{% if invoice_data.igstcheck %}
-								<th class="text-right">IGST ({{ currency }})</th>
-							{% else %}
-								<th class="text-right">CGST ({{ currency }})</th>
-								<th class="text-right">SGST ({{ currency }})</th>
-							{% endif %}
-							<th class="text-right">Total Amount ({{ currency }})</th>
+<center>
+    <p><b>Thank you for your business!</b></p>
+    <p class="small">GST System 2.0 – Auto-compliant Invoice</p>
+</center>
 
-						</tr>
-					</thead>
-					<tbody>
-						{% for item in invoice_data.items %}
-						<tr>
-							<td class="text-center">{{ forloop.counter }}</td>
-							<td class="text-left strong">{{ item.invoice_product }}</td>
-							<td class="text-center">{{ item.invoice_hsn }}</td>
-							<td class="text-center">{{ item.invoice_unit }}</td>
-							<td class="text-right">{{ item.invoice_qty }}</td>
-							<td class="text-right">{{ item.invoice_rate_without_gst|floatformat:2 }}</td>
-							<td class="text-right">{{ item.invoice_amt_without_gst|floatformat:2 }}</td>
-							<td class="text-right">{{ item.invoice_gst_percentage }}</td>
-							{% if invoice_data.igstcheck %}
-								<td class="text-right">{{ item.invoice_amt_igst|floatformat:2 }}</td>
-							{% else %}
-								<td class="text-right">{{ item.invoice_amt_cgst|floatformat:2 }}</td>
-								<td class="text-right">{{ item.invoice_amt_sgst|floatformat:2 }}</td>
-							{% endif %}
-							<td class="text-right">{{ item.invoice_amt_with_gst|floatformat:2 }}</td>
-						</tr>
-						{% endfor %}
-
-						<tr id="table-invoice-total-row">
-							{% if invoice_data.igstcheck %}
-								<td class="text-right" colspan="6">Total: </td>
-								<td class="text-right">{{ currency }} {{ invoice_data.invoice_total_amt_without_gst|floatformat:2 }}</td>
-								<td class="text-right"></td>
-								<td class="text-right">{{ currency }} {{invoice_data.invoice_total_amt_igst|floatformat:2 }}</td>
-							{% else %}
-								<td class="text-right" colspan="6">Total: </td>
-								<td class="text-right">{{ currency }} {{ invoice_data.invoice_total_amt_without_gst|floatformat:2 }}</td>
-								<td class="text-right"></td>
-								<td class="text-right">{{ currency }} {{invoice_data.invoice_total_amt_cgst|floatformat:2 }}</td>
-								<td class="text-right">{{ currency }} {{invoice_data.invoice_total_amt_sgst|floatformat:2 }}</td>
-							{% endif %}
-							<td class="text-right"><strong>{{ currency }} {{ invoice_data.invoice_total_amt_with_gst|floatformat:2 }}</strong></td>
-						</tr>
-
-					</tbody>
-				</table>
-			</div>
-
-			<div class="row">
-
-
-				<div class="col-sm-6 col-lg-6 col-md-6">
-					
-				</div>
-
-				<div class="col-sm-6 col-lg-6 col-md-6">
-					<table class="table text-right" id="invoice-grand-total-table">
-						<tr>
-							<td>Total Taxable Amount: </td>
-							<td>{{ currency }} {{ invoice_data.invoice_total_amt_without_gst|floatformat:2 }}</td>
-						</tr>
-						{% if invoice_data.igstcheck %}
-							<tr>
-								<td>IGST: </td>
-								<td>{{ currency }} {{ invoice_data.invoice_total_amt_igst|floatformat:2 }}</td>
-							</tr>
-						{% else %}
-							<tr>
-								<td>CGST: </td>
-								<td>{{ currency }} {{ invoice_data.invoice_total_amt_cgst|floatformat:2 }}</td>
-							</tr>
-							<tr>
-								<td>SGST: </td>
-								<td>{{ currency }} {{ invoice_data.invoice_total_amt_sgst|floatformat:2 }}</td>
-							</tr>
-						{% endif %}
-						<tr>
-							<td>Invoice Total: </td>
-							<td>{{ currency }} {{invoice_data.invoice_total_amt_with_gst|floatformat:2 }}</td>
-						</tr>
-						<tr> 
-							<td colspan="2" class="text-middle">
-								Invoice Total In Words: {{ total_in_words }} only.
-							</td>
-						</tr>
-						<tr id="invoice-signature-row">
-							<td colspan="2"></td>
-						</tr>
-						<tr id="invoice-signature-text-row">
-							<td colspan="2">Authorized Signatory<br> E, & O.E.	</td>
-						</tr>
-					</table>
-
-
-				</div>
-
-
-
-			</div>
-
-
-		</div>
-	</div>
-
-	<button onclick="window.print();" class="btn btn-primary d-print-none">Print Invoice</button>
-
-
-{% endblock %}
+</body>
+</html>
